@@ -76,11 +76,11 @@
         <div class="form-inline">
             <p class="input-lg" style="height: auto">This scatter chart show all participants of the Oceanman 2018 14k distance. The more
                 they are on the left, the faster they are.
-                The more on the top, the older. Type your name in the form field to find yourself.</p>
-            <label class="control-label input-lg" for="participant">Search</label>
+                The more on the top, the older. Type your name in the form field to find yourself. Touch the dots to see details.</p>
+            <label class="control-label input-lg" for="participant">Search for name, team or nationality:</label>
             <input type="text" class="form-control input-lg" id="participant" size="50"
-                   placeholder="name, team or nationality">
-        <div class="form-group">
+                   placeholder='"igor", "aquatic" or "mex"'>
+        <div class="form-group" style="margin-left: 20px">
              <div class="checkbox">
                  <label class=" input-lg">
                      <input type="checkbox" class="gender" name="gender-male" id="gender-male" value="men" checked> Men
@@ -106,7 +106,7 @@
 
     function redraw() {
         var width = chartDiv.clientWidth;
-        var height = chartDiv.clientWidth / 2;
+        var height = chartDiv.clientWidth / 2.5;
 
         var margin = {'left': 40, 'right': 80, 'top': 20, 'bottom': 10};
 
