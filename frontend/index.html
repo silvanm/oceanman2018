@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+    <style>
+
+        body {
+            background-color: black;
+            color: white;
+            margin: 30px;
+            font-family: 'Open Sans Condensed', sans-serif;
+
+        }
+
+        div.margins {
+            margin-left: 38px
+        }
+
+        h1 {
+            margin-left: 38px;
+        }
+
+        .chart {
+            margin: auto;
+        }
+
+        .chart circle {
+            fill: #91c7ff;
+            opacity: 0.5;
+        }
+
+        .chart circle.me {
+            fill: red;
+            opacity: 1
+        }
+
+        .chart circle.women {
+            fill: #ffc0f5;
+        }
+
+        .chart text {
+            fill: white;
+            font: 10px sans-serif;
+            /*text-anchor: ;*/
+        }
+
+        text.caption {
+            display: none
+        }
+
+        text.caption.interesting {
+            display: block;
+        }
+
+        .axis text {
+            font: 10px sans-serif;
+            fill: white;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: white;
+            shape-rendering: crispEdges;
+        }
+
+    </style>
+</head>
+<body>
+<h1 style="padding: 10px 16px">Visual Ranking: Oceanman Italia 2018</h1>
+<div class="margins">
+    <form role="form">
+        <div class="form-inline">
+            <p class="input-lg" style="height: auto">This scatter chart show all participants of the Oceanman 2018 14k distance. The more
+                they are on the left, the faster they are.
+                The more on the top, the older. Type your name in the form field to find yourself.</p>
+            <label class="control-label input-lg" for="participant">Search</label>
+            <input type="text" class="form-control input-lg" id="participant" size="50"
+                   placeholder="name, team or nationality">
+        <div class="form-group">
+             <div class="checkbox">
+                 <label class=" input-lg">
+                     <input type="checkbox" class="gender" name="gender-male" id="gender-male" value="men" checked> Men
+                 </label>
+                 <label class=" input-lg">
+                     <input type="checkbox" class="gender" name="gender-female" id="gender-female" value="women" checked>
+                     Women
+                 </label>
+             </div>
+         </div>
+        </div>
+
+    </form>
+</div>
+<div id="chart" style="width: 100%">
+</div>
+<div class="margins">&copy; Silvan Mühlemann, 24.6.2018, Data provided by <a href="https://www.endu.net/">endu.net</a></div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript">
+
+    var chartDiv = document.getElementById("chart");
+    var svg = d3.select(chartDiv).append("svg");
+
+    function redraw() {
+        var width = chartDiv.clientWidth;
+        var height = chartDiv.clientWidth / 2;
+
+        var margin = {'left': 40, 'right': 80, 'top': 20, 'bottom': 10};
+
+        var x = d3.time.scale()
+            .range([margin.left, width - margin.right - margin.left]);
+
+        var y = d3.scale.linear()
+            .range([height - margin.top - margin.bottom, margin.top]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom')
+            .tickFormat(d3.time.format('%H:%M'));
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left');
+
+        var chart = svg
+            .attr("width", width)
+            .attr("height", height)
+            .attr("class", 'chart')
+            .append("g")
+            .attr("transform", "translate(" + (margin.left) + ", " + margin.top + ")");
+
+        var isInteresting = function (d) {
+
+            //return ["135", 4596, 5399, 4938, 8585, 993, 966, 1, 2, 3, 4, 0].indexOf(d.Bib) >= 0;
+            return false
+        };
+
+        //dsv("cityrun-male.csv", type, function (error, data) {
+        //dsv("silvesterlauf.csv", type, function (error, data) {
+        d3.json("processed.json", function (error, data) {
+            data = convertType(data);
+            x.domain([
+                d3.min(data, function (d) {
+                    return d.OffsetTime;
+                }),
+                d3.max(data, function (d) {
+                    return d.OffsetTime;
+                })]);
+
+            y.domain(d3.extent(data, function (d) {
+                return d.Age;
+            }));
+
+            // Move the interesting values to the front (z-index in SVG)
+            var interestingValues = data.filter(isInteresting);
+            var uninterestingValues = data.filter(function (d) {
+                return !isInteresting(d);
+            });
+            data = d3.merge([uninterestingValues, interestingValues]);
+
+            dot = chart.selectAll("g")
+                .data(data)
+                .enter().append("g")
+                .attr("transform", function (d, i) {
+                    return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
+                });
+
+            dot.append('circle')
+                .attr('cy', 0)
+                .attr('cx', 0)
+                .attr("r", "0.6rem")
+                .attr("class", function (d) {
+                    if (isInteresting(d)) {
+                        return "me";
+                    }
+                    if (d.Gender == 'F') {
+                        return "women";
+                    } else {
+                        return "men";
+                    }
+                })
+                .attr('data-name', function (d) {
+                    return d.Name;
+                })
+                .attr('data-time', function (d) {
+                    return d.OffsetTime;
+                })
+                .attr('data-gender', function (d) {
+                    if (d.Gender == 'F') {
+                        return "women";
+                    } else {
+                        return "men";
+                    }
+                })
+                .attr('data-age', function (d) {
+                    return d.Age;
+                });
+
+            dot.append("text", "circle")
+                .attr('class', function (d) {
+                    return 'caption' + (isInteresting(d) ? ' interesting' : '');
+                })
+                .attr("y", 0)
+                .attr("x", 5)
+                .attr("dy", ".35em")
+                .text(function (d) {
+                    return d.Rank + ". " + d.Name + ", " + d.Age + ", " + d.Time;
+                });
+
+            chart.append("g")
+                .attr("class", "x axis")
+                .call(xAxis)
+                .append("text")
+                .attr("x", (width - margin.left - margin.right) / 2 + margin.left)
+                .attr("y", -15)
+                .attr("dy", ".71em")
+                .style("text-anchor", "center")
+                .text("Finish time");
+
+            chart.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("x", -margin.top + (+margin.bottom + margin.top - height) / 2)
+                .attr("dy", ".71em")
+                .style("text-anchor", "begin")
+                .text("Age");
+
+            jQuery("circle").click(function () {
+                console.log($(this).data().name + " " + $(this).data().age);
+            });
+
+            jQuery("circle:not(.interesting)").hover(function () {
+                $(this).parent().find('text').fadeIn();
+            }, function () {
+                $(this).parent().find('text').fadeOut();
+            });
+
+            $("input.gender").click(function () {
+                var gender = $(this).val();
+                if ($(this).prop('checked')) {
+                    $('circle.' + gender).show();
+                } else {
+                    $('circle.' + gender).hide();
+                }
+            });
+
+            $("#participant").keyup(function () {
+                if ($("#participant").val().length >= 3) {
+                    jQuery.each(jQuery("circle"), function (ix, e) {
+                        attr = e.getAttribute('class');
+
+                        if (e.getAttribute('data-name').toLowerCase().indexOf($("#participant").val().toLowerCase()) >= 0) {
+                            e.setAttribute('class', 'me');
+                            $(this).parent().find('text').show();
+                        } else {
+                            e.setAttribute('class', e.getAttribute('data-gender'));
+                            $(this).parent().find('text').hide();
+                        }
+                    });
+                }
+            });
+
+            /*$("text.caption").click(function() {
+         $(this).show();
+         })*/
+        });
+
+        function convertType(d) {
+            for (i = 0; i < d.length; i++) {
+                var hms = d[i].Time;   // your input string
+                var a = hms.split(':'); // split it at the colons
+
+                if (a.length == 2) {
+                    var date = new Date(0, 0, 0, 0, +a[0], +a[1]);
+                } else {
+                    var date = new Date(0, 0, 0, +a[0], +a[1], +a[2]);
+                }
+                d[i].OffsetTime = date;
+            }
+
+            return d;
+        }
+    }
+
+    // Draw for the first time to initialize.
+    redraw();
+
+
+
+</script>
+</body>
+</html>
