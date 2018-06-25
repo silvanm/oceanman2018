@@ -30,6 +30,8 @@ catMap = {
     'MF 60-99': {'Gender': 'F', 'Pos': 6},
     'INSP-M': {'Gender': 'M', 'Pos': 7},
     'INSP-F': {'Gender': 'F', 'Pos': 7},
+    'sprint-F': {'Gender': 'F', 'Pos': 8},
+    'sprint-M': {'Gender': 'M', 'Pos': 8},
 }
 
 def calculate_age(born):
@@ -40,7 +42,7 @@ def calculate_age(born):
 outdata = []
 first=True
 line=0
-with open("oceanman2018.tsv") as csvfile:
+with open("Oceanman2018-half - Generale.tsv") as csvfile:
     reader = csv.reader(csvfile, delimiter="\t")
     for row in reader:
         if first:
@@ -62,7 +64,7 @@ with open("oceanman2018.tsv") as csvfile:
         out['Cat'] = row[6]
 
         try:
-            r = requests.get(f'https://apiah-staging.endu.net/events/41115/result/{row[1]}/detail')
+            r = requests.get(f'https://apiah-staging.endu.net/events/41115/result/{int(row[1])+1000}/detail')
             record = r.json()
             parts = record['year'].split('-')
             born = date(int(parts[0]), int(parts[1]), int(parts[2]))

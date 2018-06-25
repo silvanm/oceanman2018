@@ -2,13 +2,27 @@
 <html>
 <head>
     <meta charset="utf-8">
-     <meta property="og:url" content="https://oceanman2018.muehlemann.com/"/>
+    <meta property="og:url" content="https://oceanman2018.muehlemann.com/"/>
     <meta property="og:type" content="article"/>
     <meta property="og:title" content="Visual Ranking: Oceanman Italia 2018"/>
     <meta property="og:author" content="Silvan Mühlemann"/>
     <meta property="og:description"
-          content="This scatter chart show all participants of the Oceanman 2018 14k distance."/>
+          content="This scatter chart show all participants of the Oceanman Italia 2018"/>
     <meta property="og:image" content="https://oceanman2018.muehlemann.com/og-image.png"/>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-10357230-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'UA-10357230-1');
+    </script>
+
 
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
@@ -51,7 +65,7 @@
 
         .chart text {
             fill: white;
-            font: 10px sans-serif;
+            font: 12px sans-serif;
             /*text-anchor: ;*/
         }
 
@@ -82,73 +96,135 @@
 <div class="margins">
     <form role="form">
         <div class="form-inline">
-            <p class="input-lg" style="height: auto">This scatter chart show all participants of the Oceanman 2018 14k distance. The more
+            <p class="input-lg" style="height: auto">This scatter chart show all participants of the Oceanman Italia
+                2018. The more
                 they are on the left, the faster they are.
-                The more on the top, the older. Type your name in the form field to find yourself. Touch the dots to see details.</p>
+                The more on the top, the older. Type your name in the form field to find yourself. Touch the dots to see
+                details.</p>
+
+            <div class="form-group" style="margin-left: 20px">
+                <div class="radio">
+                    <label class=" input-lg">
+                        <input type="radio" name="race" id="race-sprint" value="sprint" checked> Sprint
+                    </label>
+                    <label class=" input-lg">
+                        <input type="radio" name="race" id="race-half" value="half" checked> Half
+                    </label>
+                    <label class=" input-lg">
+                        <input type="radio" name="race" id="race-full" value="full" checked> Full
+                    </label>
+                </div>
+            </div>
+
+
             <label class="control-label input-lg" for="participant">Search for name, team or nationality:</label>
-            <input type="text" class="form-control input-lg" id="participant" size="50"
+            <input type="text" class="form-control input-lg" id="participant" size="30"
                    placeholder='"igor", "aquatic" or "mex"'>
-        <div class="form-group" style="margin-left: 20px">
-             <div class="checkbox">
-                 <label class=" input-lg">
-                     <input type="checkbox" class="gender" name="gender-male" id="gender-male" value="men" checked> Men
-                 </label>
-                 <label class=" input-lg">
-                     <input type="checkbox" class="gender" name="gender-female" id="gender-female" value="women" checked>
-                     Women
-                 </label>
-             </div>
-         </div>
+            <div class="form-group" style="margin-left: 20px">
+                <div class="checkbox">
+                    <label class=" input-lg">
+                        <input type="checkbox" class="gender" name="gender-male" id="gender-male" value="men" checked>
+                        Men
+                    </label>
+                    <label class=" input-lg">
+                        <input type="checkbox" class="gender" name="gender-female" id="gender-female" value="women"
+                               checked>
+                        Women
+                    </label>
+                </div>
+            </div>
         </div>
 
     </form>
 </div>
 <div id="chart" style="width: 100%">
 </div>
-<div class="margins">&copy; <a href="https://mühlemann.ch">Silvan Mühlemann</a>, 24.6.2018, Data provided by <a href="https://www.endu.net/">endu.net</a></div>
+<div class="margins">&copy; <a href="https://mühlemann.ch">Silvan Mühlemann</a>, 24.6.2018, Data provided by <a
+        href="https://www.endu.net/">endu.net</a></div>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript">
+
 
     var chartDiv = document.getElementById("chart");
     var svg = d3.select(chartDiv).append("svg");
 
+    var width = chartDiv.clientWidth;
+    var height = chartDiv.clientWidth / 2.5;
+
+    var margin = {'left': 40, 'right': 80, 'top': 20, 'bottom': 10};
+
+    var x = d3.time.scale()
+        .range([margin.left, width - margin.right - margin.left]);
+
+    var y = d3.scale.linear()
+        .range([height - margin.top - margin.bottom, margin.top]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient('bottom')
+        .tickFormat(d3.time.format('%H:%M'));
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient('left');
+
+    var chart = svg
+        .attr("width", width)
+        .attr("height", height)
+        .attr("class", 'chart')
+        .append("g")
+        .attr("transform", "translate(" + (margin.left) + ", " + margin.top + ")");
+
+    $("input.gender").click(function () {
+        var gender = $(this).val();
+        if ($(this).prop('checked')) {
+            $('circle.' + gender).show();
+        } else {
+            $('circle.' + gender).hide();
+        }
+    });
+
+    $("#participant").keyup(function () {
+        if ($("#participant").val().length >= 3) {
+            jQuery.each(jQuery("circle"), function (ix, e) {
+                attr = e.getAttribute('class');
+
+                if (e.getAttribute('data-name').toLowerCase().indexOf($("#participant").val().toLowerCase()) >= 0) {
+                    e.setAttribute('class', 'me');
+                    $(this).parent().find('text').show();
+                } else {
+                    e.setAttribute('class', e.getAttribute('data-gender'));
+                    $(this).parent().find('text').hide();
+                }
+            });
+        }
+    });
+
+
     function redraw() {
-        var width = chartDiv.clientWidth;
-        var height = chartDiv.clientWidth / 2.5;
 
-        var margin = {'left': 40, 'right': 80, 'top': 20, 'bottom': 10};
-
-        var x = d3.time.scale()
-            .range([margin.left, width - margin.right - margin.left]);
-
-        var y = d3.scale.linear()
-            .range([height - margin.top - margin.bottom, margin.top]);
-
-        var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient('bottom')
-            .tickFormat(d3.time.format('%H:%M'));
-
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient('left');
-
-        var chart = svg
-            .attr("width", width)
-            .attr("height", height)
-            .attr("class", 'chart')
-            .append("g")
-            .attr("transform", "translate(" + (margin.left) + ", " + margin.top + ")");
+        var race = race = $('input[name=race]:checked').val();
 
         var isInteresting = function (d) {
 
-            return ["277", "1"].indexOf(d.Bib) >= 0;
+            if (race == 'full') {
+                return ["277", "1"].indexOf(d.Bib) >= 0;
+            } else if (race == 'half') {
+                return ["478", "451"].indexOf(d.Bib) >= 0;
+            } else {
+                return ["137", "132"].indexOf(d.Bib) >= 0;
+            }
             //return false
         };
 
+
         //dsv("cityrun-male.csv", type, function (error, data) {
         //dsv("silvesterlauf.csv", type, function (error, data) {
-        d3.json("processed.json", function (error, data) {
+        d3.json("processed-" + race + ".json", function (error, data) {
+
+            d3.selectAll("g.elems").remove();
+            d3.selectAll(".axis").remove();
+
             data = convertType(data);
             x.domain([
                 d3.min(data, function (d) {
@@ -172,6 +248,7 @@
             dot = chart.selectAll("g")
                 .data(data)
                 .enter().append("g")
+                .attr("class", "elems")
                 .attr("transform", function (d, i) {
                     return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
                 });
@@ -249,31 +326,6 @@
                 $(this).parent().find('text').fadeOut();
             });
 
-            $("input.gender").click(function () {
-                var gender = $(this).val();
-                if ($(this).prop('checked')) {
-                    $('circle.' + gender).show();
-                } else {
-                    $('circle.' + gender).hide();
-                }
-            });
-
-            $("#participant").keyup(function () {
-                if ($("#participant").val().length >= 3) {
-                    jQuery.each(jQuery("circle"), function (ix, e) {
-                        attr = e.getAttribute('class');
-
-                        if (e.getAttribute('data-name').toLowerCase().indexOf($("#participant").val().toLowerCase()) >= 0) {
-                            e.setAttribute('class', 'me');
-                            $(this).parent().find('text').show();
-                        } else {
-                            e.setAttribute('class', e.getAttribute('data-gender'));
-                            $(this).parent().find('text').hide();
-                        }
-                    });
-                }
-            });
-
             /*$("text.caption").click(function() {
          $(this).show();
          })*/
@@ -296,9 +348,14 @@
         }
     }
 
+    $('input[name=race]').on('click', function () {
+        var race = $('input[name=race]:checked').val();
+        console.log(race);
+        redraw();
+    });
+
     // Draw for the first time to initialize.
     redraw();
-
 
 
 </script>
