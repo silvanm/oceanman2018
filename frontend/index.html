@@ -9,6 +9,7 @@
     <meta property="og:description"
           content="This scatter chart show all participants of the Oceanman Italia 2018"/>
     <meta property="og:image" content="https://oceanman2018.muehlemann.com/og-image.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-10357230-1"></script>
     <script>
@@ -37,12 +38,27 @@
 
         }
 
-        div.margins {
-            margin-left: 38px
+        @media (min-width: 768px) {
+
         }
 
-        h1 {
-            margin-left: 38px;
+        @media (max-width: 768px) {
+            body {
+                margin: 0
+            }
+
+            p.input-lg, label.input-lg {
+                padding-left: 0;
+            }
+
+
+            div.margins {
+                margin-left: 38px
+            }
+
+            h1 {
+                margin-left: 38px;
+            }
         }
 
         .chart {
@@ -92,25 +108,31 @@
     </style>
 </head>
 <body>
-<h1 style="padding: 10px 16px">Visual Ranking: Oceanman Italia 2018</h1>
+<h1>Visual Ranking: Oceanman Italia 2018</h1>
 <div class="margins">
     <form role="form">
         <div class="form-inline">
-            <p class="input-lg" style="height: auto">Every dot is one participant. The more
+            <p class="input-lg" style="height: auto">
+                <span class="text-landscape"> Every dot is one participant. The more
                 they are on the left, the faster they are.
                 The more on the top, the older. Type your name in the form field to find yourself. Touch the dots to see
-                details.</p>
+                details.</span>
+                <span class="text-portrait"> Every dot is one participant. The more
+                they are on the top, the faster they are.
+                The more on the right, the older. Type your name in the form field to find yourself. Touch the dots to see
+                details.</span>
+            </p>
 
             <div class="form-group" style="margin-left: 20px">
                 <div class="radio">
                     <label class=" input-lg">
-                        <input type="radio" name="race" id="race-sprint" value="sprint" > Sprint
+                        <input type="radio" name="race" id="race-sprint" value="sprint"> Sprint
                     </label>
                     <label class=" input-lg">
-                        <input type="radio" name="race" id="race-half" value="half" > Half
+                        <input type="radio" name="race" id="race-half" value="half"> Half
                     </label>
                     <label class=" input-lg">
-                        <input type="radio" name="race" id="race-full" value="full" > Full
+                        <input type="radio" name="race" id="race-full" value="full"> Full
                     </label>
                 </div>
             </div>
@@ -138,7 +160,7 @@
 </div>
 <div id="chart" style="width: 100%">
 </div>
-<div class="margins" >
+<div class="margins">
     <p class="input-lg" style="height: auto;display: none" id="share">
         Show this view with your friends by sharing this link: <a href="/" class="url"><span class="url"></span></a>
     </p>
@@ -162,25 +184,59 @@
     var chartDiv = document.getElementById("chart");
     var svg = d3.select(chartDiv).append("svg");
 
-    var width = chartDiv.clientWidth;
-    var height = chartDiv.clientWidth / 2.5;
+
+    var landscape = true;
+    if (window.innerWidth < window.innerHeight) {
+        landscape = false;
+        var width = chartDiv.clientWidth;
+        var height = window.innerHeight;
+        $('.text-portrait').show();
+        $('.text-landscape').hide();
+    } else {
+        var width = chartDiv.clientWidth;
+        var height = chartDiv.clientWidth / 2.5;
+        $('.text-portrait').hide();
+        $('.text-landscape').show();
+    }
 
     var margin = {'left': 40, 'right': 80, 'top': 20, 'bottom': 10};
 
-    var x = d3.time.scale()
-        .range([margin.left, width - margin.right - margin.left]);
+    if (landscape) {
+        var x = d3.time.scale()
+            .range([margin.left, width - margin.right - margin.left]);
 
-    var y = d3.scale.linear()
-        .range([height - margin.top - margin.bottom, margin.top]);
+        var y = d3.scale.linear()
+            .range([height - margin.top - margin.bottom, margin.top]);
 
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient('bottom')
-        .tickFormat(d3.time.format('%H:%M'));
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom')
+            .tickFormat(d3.time.format('%H:%M'));
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient('left');
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left');
+
+    } else {
+        margin.right = 20;
+        margin.left = 40;
+
+        var x = d3.scale.linear()
+            .range([margin.left, width - margin.right - margin.left]);
+
+        var y = d3.time.scale()
+            .range([margin.top, height - margin.top - margin.bottom]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom');
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left')
+            .tickFormat(d3.time.format('%H:%M'));
+    }
+
 
     var chart = svg
         .attr("width", width)
@@ -199,27 +255,27 @@
     });
 
     function highlightParticipant(q) {
-            jQuery.each(jQuery("circle"), function (ix, e) {
-                attr = e.getAttribute('class');
+        jQuery.each(jQuery("circle"), function (ix, e) {
+            attr = e.getAttribute('class');
 
-                if (e.getAttribute('data-name').toLowerCase().indexOf(q.toLowerCase()) >= 0) {
-                    e.setAttribute('class', 'me');
-                    $(this).parent().find('text').show();
-                } else {
-                    e.setAttribute('class', e.getAttribute('data-gender'));
-                    $(this).parent().find('text').hide();
-                }
-            });
+            if (e.getAttribute('data-name').toLowerCase().indexOf(q.toLowerCase()) >= 0) {
+                e.setAttribute('class', 'me');
+                $(this).parent().find('text').show();
+            } else {
+                e.setAttribute('class', e.getAttribute('data-gender'));
+                $(this).parent().find('text').hide();
+            }
+        });
     }
 
     $("#participant").keyup(function () {
         if ($("#participant").val().length >= 3) {
             $('#share').fadeIn();
-            highlightParticipant($("#participant").val())
-            var url=window.location.protocol  + '//' + window.location.hostname + window.location.pathname + '?bib=' + $("#participant").val()
-                + '&race=' + $('input[name=race]:checked').val()
-            $('a.url').attr('href', url)
-            $('.url').text(url)
+            highlightParticipant($("#participant").val());
+            var url = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '?bib=' + $("#participant").val()
+                + '&race=' + $('input[name=race]:checked').val();
+            $('a.url').attr('href', url);
+            $('.url').text(url);
         }
     });
 
@@ -229,10 +285,10 @@
         if (race = $('input[name=race]:checked').val()) {
         } else if (race = getParameterByName('race')) {
         } else {
-            race = 'full'
+            race = 'full';
         }
         $('input#race-' + race).prop('checked', true);
-        console.log(race)
+        console.log(race);
 
         var isInteresting = function (d) {
 
@@ -259,17 +315,34 @@
             d3.selectAll(".axis").remove();
 
             data = convertType(data);
-            x.domain([
-                d3.min(data, function (d) {
-                    return d.OffsetTime;
-                }),
-                d3.max(data, function (d) {
-                    return d.OffsetTime;
-                })]);
 
-            y.domain(d3.extent(data, function (d) {
-                return d.Age;
-            }));
+            if (landscape) {
+                x.domain([
+                    d3.min(data, function (d) {
+                        return d.OffsetTime;
+                    }),
+                    d3.max(data, function (d) {
+                        return d.OffsetTime;
+                    })]);
+
+                y.domain(d3.extent(data, function (d) {
+                    return d.Age;
+                }));
+
+            } else {
+                y.domain([
+                    d3.min(data, function (d) {
+                        return d.OffsetTime;
+                    }),
+                    d3.max(data, function (d) {
+                        return d.OffsetTime;
+                    })]);
+
+                x.domain(d3.extent(data, function (d) {
+                    return d.Age;
+                }));
+
+            }
 
             // Move the interesting values to the front (z-index in SVG)
             var interestingValues = data.filter(isInteresting);
@@ -278,18 +351,29 @@
             });
             data = d3.merge([uninterestingValues, interestingValues]);
 
-            dot = chart.selectAll("g")
-                .data(data)
-                .enter().append("g")
-                .attr("class", "elems")
-                .attr("transform", function (d, i) {
-                    return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
-                });
+            if (landscape) {
+                dot = chart.selectAll("g")
+                    .data(data)
+                    .enter().append("g")
+                    .attr("class", "elems")
+                    .attr("transform", function (d, i) {
+                        return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
+                    });
+
+            } else {
+                dot = chart.selectAll("g")
+                    .data(data)
+                    .enter().append("g")
+                    .attr("class", "elems")
+                    .attr("transform", function (d, i) {
+                        return "translate(" + x(d.Age) + "," + y(d.OffsetTime) + ")";
+                    });
+            }
 
             dot.append('circle')
                 .attr('cy', 0)
                 .attr('cx', 0)
-                .attr("r", "0.6rem")
+                .attr("r", "5px")
                 .attr("class", function (d) {
                     if (isInteresting(d)) {
                         return "me";
@@ -323,6 +407,7 @@
                 })
                 .attr("y", 0)
                 .attr("x", 5)
+                .attr("transform", landscape ? "rotate(0)" : "rotate(90)")
                 .attr("dy", ".35em")
                 .text(function (d) {
                     return d.Rank + ". " + d.Name + ", " + d.Time;
@@ -336,7 +421,7 @@
                 .attr("y", -15)
                 .attr("dy", ".71em")
                 .style("text-anchor", "center")
-                .text("Finish time");
+                .text(landscape ? "Finish time" : "Age");
 
             chart.append("g")
                 .attr("class", "y axis")
@@ -347,7 +432,7 @@
                 .attr("x", -margin.top + (+margin.bottom + margin.top - height) / 2)
                 .attr("dy", ".71em")
                 .style("text-anchor", "begin")
-                .text("Age");
+                .text(landscape ? "Age" : "Finish time");
 
             jQuery("circle").click(function () {
                 console.log($(this).data().name + " " + $(this).data().age);
@@ -364,8 +449,8 @@
          })*/
 
             var q;
-            if (q=getParameterByName('bib')) {
-                highlightParticipant(q)
+            if (q = getParameterByName('bib')) {
+                highlightParticipant(q);
             }
         });
 
