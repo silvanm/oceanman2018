@@ -96,8 +96,7 @@
 <div class="margins">
     <form role="form">
         <div class="form-inline">
-            <p class="input-lg" style="height: auto">This scatter chart show all participants of the Oceanman Italia
-                2018. The more
+            <p class="input-lg" style="height: auto">Every dot is one participant. The more
                 they are on the left, the faster they are.
                 The more on the top, the older. Type your name in the form field to find yourself. Touch the dots to see
                 details.</p>
@@ -105,13 +104,13 @@
             <div class="form-group" style="margin-left: 20px">
                 <div class="radio">
                     <label class=" input-lg">
-                        <input type="radio" name="race" id="race-sprint" value="sprint" checked> Sprint
+                        <input type="radio" name="race" id="race-sprint" value="sprint" > Sprint
                     </label>
                     <label class=" input-lg">
-                        <input type="radio" name="race" id="race-half" value="half" checked> Half
+                        <input type="radio" name="race" id="race-half" value="half" > Half
                     </label>
                     <label class=" input-lg">
-                        <input type="radio" name="race" id="race-full" value="full" checked> Full
+                        <input type="radio" name="race" id="race-full" value="full" > Full
                     </label>
                 </div>
             </div>
@@ -141,7 +140,7 @@
 </div>
 <div class="margins" >
     <p class="input-lg" style="height: auto;display: none" id="share">
-        Share this view with your friends by sharing this link: <a href="/" class="url"><span class="url"></span></a>
+        Show this view with your friends by sharing this link: <a href="/" class="url"><span class="url"></span></a>
     </p>
 </div>
 <div class="margins">&copy; <a href="https://mühlemann.ch">Silvan Mühlemann</a>, 24.6.2018, Data provided by <a
@@ -218,6 +217,7 @@
             $('#share').fadeIn();
             highlightParticipant($("#participant").val())
             var url=window.location.protocol  + '//' + window.location.hostname + window.location.pathname + '?bib=' + $("#participant").val()
+                + '&race=' + $('input[name=race]:checked').val()
             $('a.url').attr('href', url)
             $('.url').text(url)
         }
@@ -225,7 +225,14 @@
 
     function redraw() {
 
-        var race = race = $('input[name=race]:checked').val();
+        var race;
+        if (race = $('input[name=race]:checked').val()) {
+        } else if (race = getParameterByName('race')) {
+        } else {
+            race = 'full'
+        }
+        $('input#race-' + race).prop('checked', true);
+        console.log(race)
 
         var isInteresting = function (d) {
 
