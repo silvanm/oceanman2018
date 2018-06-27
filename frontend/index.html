@@ -117,9 +117,9 @@
             </div>
 
 
-            <label class="control-label input-lg" for="participant">Search for name, team or nationality:</label>
+            <label class="control-label input-lg" for="participant">Search for name, bib, team or nationality:</label>
             <input type="text" class="form-control input-lg" id="participant" size="30"
-                   placeholder='"igor", "aquatic" or "mex"'>
+                   placeholder='"igor", "135", "aquatic" or "mex"'>
             <div class="form-group" style="margin-left: 20px">
                 <div class="checkbox">
                     <label class=" input-lg">
@@ -138,6 +138,11 @@
     </form>
 </div>
 <div id="chart" style="width: 100%">
+</div>
+<div class="margins" >
+    <p class="input-lg" style="height: auto;display: none" id="share">
+        Share this view with your friends by sharing this link: <a href="/" class="url"><span class="url"></span></a>
+    </p>
 </div>
 <div class="margins">&copy; <a href="https://mühlemann.ch">Silvan Mühlemann</a>, 24.6.2018, Data provided by <a
         href="https://www.endu.net/">endu.net</a></div>
@@ -194,12 +199,11 @@
         }
     });
 
-    $("#participant").keyup(function () {
-        if ($("#participant").val().length >= 3) {
+    function highlightParticipant(q) {
             jQuery.each(jQuery("circle"), function (ix, e) {
                 attr = e.getAttribute('class');
 
-                if (e.getAttribute('data-name').toLowerCase().indexOf($("#participant").val().toLowerCase()) >= 0) {
+                if (e.getAttribute('data-name').toLowerCase().indexOf(q.toLowerCase()) >= 0) {
                     e.setAttribute('class', 'me');
                     $(this).parent().find('text').show();
                 } else {
@@ -207,9 +211,17 @@
                     $(this).parent().find('text').hide();
                 }
             });
+    }
+
+    $("#participant").keyup(function () {
+        if ($("#participant").val().length >= 3) {
+            $('#share').fadeIn();
+            highlightParticipant($("#participant").val())
+            var url=window.location.protocol  + '//' + window.location.hostname + window.location.pathname + '?bib=' + $("#participant").val()
+            $('a.url').attr('href', url)
+            $('.url').text(url)
         }
     });
-
 
     function redraw() {
 
@@ -217,7 +229,7 @@
 
         var isInteresting = function (d) {
 
-            if (getParameterByName('bib') > 0 && d.Bib==getParameterByName('bib')) {
+            if (getParameterByName('bib') > 0 && d.Bib == getParameterByName('bib')) {
                 return true;
             }
 
@@ -282,7 +294,7 @@
                     }
                 })
                 .attr('data-name', function (d) {
-                    return d.Name + ", " + d.Cat;
+                    return d.Name + ", " + d.Cat + ", " + d.Bib;
                 })
                 .attr('data-time', function (d) {
                     return d.OffsetTime;
@@ -343,6 +355,11 @@
             /*$("text.caption").click(function() {
          $(this).show();
          })*/
+
+            var q;
+            if (q=getParameterByName('bib')) {
+                highlightParticipant(q)
+            }
         });
 
         function convertType(d) {
@@ -360,6 +377,8 @@
 
             return d.reverse();
         }
+
+
     }
 
     $('input[name=race]').on('click', function () {
