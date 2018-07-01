@@ -10,7 +10,6 @@
           content="This scatter chart show all participants of the Oceanman Italia 2018"/>
     <meta property="og:image" content="https://oceanman2018.muehlemann.com/og-image.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-10357230-1"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -28,6 +27,10 @@
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <script src="//code.jquery.com/jquery-2.1.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+    <link rel="stylesheet" href="node_modules/primer-tooltips/build/build.css">
+    <script src="node_modules/primer-tooltips/build/index.js"></script>
     <style>
 
         body {
@@ -39,7 +42,9 @@
         }
 
         @media (min-width: 768px) {
-
+            .fix-margins {
+                padding-left: 16px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -49,15 +54,15 @@
 
             p.input-lg, label.input-lg {
                 padding-left: 0;
+                padding-right: 30px;
             }
 
-
             div.margins {
-                margin-left: 38px
+                margin-left: 16px
             }
 
             h1 {
-                margin-left: 38px;
+                margin-left: 16px;
             }
         }
 
@@ -108,7 +113,7 @@
     </style>
 </head>
 <body>
-<h1>Visual Ranking: Oceanman Italia 2018</h1>
+<h1 class="fix-margins">Visual Ranking: Oceanman Italia 2018</h1>
 <div class="margins">
     <form role="form">
         <div class="form-inline">
@@ -162,10 +167,11 @@
 </div>
 <div class="margins">
     <p class="input-lg" style="height: auto;display: none" id="share">
-        Show this view with your friends by sharing this link: <a href="/" class="url"><span class="url"></span></a>
+        Show this view to your friends by sharing this link: <a href="/" class="url"><span class="url" id="urlText"></span></a>
+    <span id="copy-to-clipboard"  class="tooltipped tooltipped-s" aria-label="Copy to clipboard" data-clipboard-target=".url" ><i class="fas fa-copy "></i></span>
     </p>
 </div>
-<div class="margins">&copy; <a href="https://mühlemann.ch">Silvan Mühlemann</a>, 24.6.2018, Data provided by <a
+<div class="margins fix-margins">&copy; <a href="https://mühlemann.ch">Silvan Mühlemann</a>, 24.6.2018, Data provided by <a
         href="https://www.endu.net/">endu.net</a></div>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript">
@@ -352,13 +358,20 @@
             data = d3.merge([uninterestingValues, interestingValues]);
 
             if (landscape) {
+                // find max time
+                // var maxTime = data.reduce(function (a, d) {
+                //     return (a===null || d.OffsetTime > a) ? d.OffsetTime : a;
+                // }, data[0].OffsetTime);
+
                 dot = chart.selectAll("g")
                     .data(data)
                     .enter().append("g")
                     .attr("class", "elems")
+                    .attr("style", "display:none")
                     .attr("transform", function (d, i) {
+                        //return "translate(" + x(maxTime) + "," + y(d.Age) + ")";
                         return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
-                    });
+                    })
 
             } else {
                 dot = chart.selectAll("g")
@@ -412,6 +425,13 @@
                 .text(function (d) {
                     return d.Rank + ". " + d.Name + ", " + d.Time;
                 });
+
+            // dot.transition()
+            //     .attr("transform", function (d, i) {
+            //         return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
+            //     })
+            //     .duration(5000)
+            //
 
             chart.append("g")
                 .attr("class", "x axis")
@@ -470,18 +490,31 @@
             return d.reverse();
         }
 
+        // Animation to display the dots
+        window.setTimeout(function () {
+            $('.elems').each(function (ix, e) {
+                window.setTimeout(function () {
+                    $(e).show();
+                }, Math.random() * 500)
+            })
+        }, 500)
 
     }
 
     $('input[name=race]').on('click', function () {
         var race = $('input[name=race]:checked').val();
-        console.log(race);
         redraw();
+    });
+
+    clipboard = new ClipboardJS('#copy-to-clipboard');
+
+    clipboard.on('success', function (e) {
+        $('#copy-to-clipboard').attr('aria-label', 'Copied!').addClass('tooltipped-no-delay')
+        e.clearSelection();
     });
 
     // Draw for the first time to initialize.
     redraw();
-
 
 </script>
 </body>
