@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Visual Ranking: Oceanman Italia 2018</title>
+    <link rel="icon" href="//icon.png" sizes="32x32">
     <meta charset="utf-8">
     <meta property="og:url" content="https://oceanman2018.muehlemann.com/"/>
     <meta property="og:type" content="article"/>
@@ -276,7 +278,9 @@
 
     $("#participant").keyup(function () {
         if ($("#participant").val().length >= 3) {
-            $('#share').fadeIn();
+            setTimeout(function() {
+                $('#share').fadeIn();
+            }, 1000)
             highlightParticipant($("#participant").val());
             var url = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '?bib=' + $("#participant").val()
                 + '&race=' + $('input[name=race]:checked').val();
@@ -370,7 +374,7 @@
                     .attr("style", "display:none")
                     .attr("transform", function (d, i) {
                         //return "translate(" + x(maxTime) + "," + y(d.Age) + ")";
-                        return "translate(" + x(d.OffsetTime) + "," + y(d.Age) + ")";
+                        return "translate(" + x(d.OffsetTime) + "," + y(d.Age + Math.random() * 2 - 1) + ")";
                     })
 
             } else {
@@ -379,7 +383,7 @@
                     .enter().append("g")
                     .attr("class", "elems")
                     .attr("transform", function (d, i) {
-                        return "translate(" + x(d.Age) + "," + y(d.OffsetTime) + ")";
+                        return "translate(" + x(d.Age + Math.random() * 2 - 1) + "," + y(d.OffsetTime) + ")";
                     });
             }
 
